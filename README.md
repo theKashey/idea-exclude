@@ -49,3 +49,11 @@ const workspaces = await bolt.getWorkspaces();
 exclude(process.cwd(), "monorepo", workspaces.map(({ dir }) => `${dir}/node_modules`));
 // or as a glob
 excludeByGlob(process.cwd(), "monorepo", `{${workspaces.map(({ dir }) => dir).join(",")}}/node_modules`);
+```
+
+# Prior art
+The original version created by [Aleksandr "Sasha" Motsjonov](https://twitter.com/soswow).
+
+
+# Licence
+MIT
