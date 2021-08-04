@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "commander": "^6.2.0",
+    "diary": "^0.1.6",
     "glob": "^7.1.6",
     "search-trie": "^2.0.0"
   },
