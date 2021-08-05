@@ -51,6 +51,18 @@ exclude(process.cwd(), "monorepo", workspaces.map(({ dir }) => `${dir}/node_modu
 excludeByGlob(process.cwd(), "monorepo", `{${workspaces.map(({ dir }) => dir).join(",")}}/node_modules`);
 ```
 
+# Controling verbosity level
+`idea-exclude` uses [diary](https://github.com/maraisr/diary) [for logging](https://github.com/theKashey/idea-exclude/pull/1) and in order to increase verbosity on the output one has to provide ENV variable
+```bash
+DEBUG="*" idea-exclude node_modules "packages/**/node_modules"
+```
+In order to increase verbosity while using API one has to use [diary programatic API](https://github.com/maraisr/diary#programmatic)
+```js
+import { diary, enable } from 'diary';
+
+enable('idea-exclude:*');
+```
+
 # Prior art
 The original version created by [Aleksandr "Sasha" Motsjonov](https://twitter.com/soswow).
 
