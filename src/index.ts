@@ -10,6 +10,10 @@ import {removeNestedDirectories} from "./utils";
 
 export {findProjectRoot} from './configuration';
 
+import {diary} from 'diary';
+
+const {log} = diary('idea-exclude');
+
 /**
  * Excludes list of files creating a named group
  * @param root
@@ -22,7 +26,9 @@ export const exclude = async (root: string, group: string, files: string[]) => {
   if (!ideaFile) {
     throw new Error(`💥 no .idea configuration file found at ${root} ~ ${baseName}`);
   }
-  console.log('🔎 found idea config:', ideaFile);
+
+  log('excluding %s with %f files', relative(baseName, ideaFile), files.length);
+
   const originalConfiguration: string =
     prepareIml(
       (await readFile(ideaFile)).toString("utf-8")
@@ -36,6 +42,7 @@ export const exclude = async (root: string, group: string, files: string[]) => {
 
   if (finalConfiguration !== originalConfiguration) {
     await writeFile(ideaFile, finalConfiguration);
+    log('updated %s', relative(baseName, ideaFile));
   }
 
   return files;
