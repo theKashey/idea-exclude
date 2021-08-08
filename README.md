@@ -56,11 +56,11 @@ excludeByGlob(process.cwd(), "monorepo", `{${workspaces.map(({ dir }) => dir).jo
 ```bash
 DEBUG="idea-exclude:*" idea-exclude node_modules "packages/**/node_modules"
 ```
-In order to increase verbosity while using API one has to use [diary programatic API](https://github.com/maraisr/diary#programmatic)
+In order to increase verbosity while using API use dedicated `debug` command
 ```js
-import { diary, enable } from 'diary';
+import {debug as enabledIdeaExcludeDebug} from 'idea-exclude';
 
-enable('idea-exclude:*');
+enabledIdeaExcludeDebug();
 ```
 
 # Prior art
