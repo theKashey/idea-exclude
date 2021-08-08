@@ -10,9 +10,14 @@ import {removeNestedDirectories} from "./utils";
 
 export {findProjectRoot} from './configuration';
 
-import {diary} from 'diary';
+import {diary, enable} from 'diary';
 
 const {log} = diary('idea-exclude');
+
+/**
+ * Puts idea-exclude into debug mode, and thus logging to stdout. This mentod isnt reversable. 
+ */
+export const debug = () => enable('idea-exclude:*');
 
 /**
  * Excludes list of files creating a named group
