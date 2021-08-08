@@ -32,9 +32,9 @@ program
     }
 
     try {
-      const filesMatched = await (glob.length === 1
-        ? excludeByGlob(root, group, glob[0], ignore)
-        : exclude(root, group, glob));
+      const filesMatched = await (globs.length === 1
+        ? excludeByGlob(root, group, globs[0], ignore)
+        : exclude(root, group, globs));
       console.log(filesMatched.length, "entities added");
       return;
     } catch (e) {
