@@ -12,13 +12,7 @@ import {log, debug as enableDebug, error} from "./logging";
 export {findProjectRoot} from './configuration';
 export {enableDebug}
 
-/**
- * Excludes list of files creating a named group
- * @param root
- * @param group
- * @param files
- */
-export const exclude = async (root: string, group: string, files: string[]): Promise<string[]> => {
+const excludeFiles = async (root: string, group: string, files: string[], mask: string): Promise<string[]> => {
   const baseName = getProjectNameFromPath(root);
   const ideaFile = findConfigurationFile(root, baseName);
   if (!ideaFile) {
@@ -26,7 +20,7 @@ export const exclude = async (root: string, group: string, files: string[]): Pro
     return [];
   }
 
-  log('excluding %s with %f files', relative(baseName, ideaFile), files.length);
+  log('excluding %s with %f files', relative(baseName, ideaFile), files.length, 'matching', mask);
 
   const originalConfiguration: string =
     prepareIml(
@@ -41,11 +35,21 @@ export const exclude = async (root: string, group: string, files: string[]): Pro
 
   if (finalConfiguration !== originalConfiguration) {
     await writeFile(ideaFile, finalConfiguration);
-    log('updated %s', relative(baseName, ideaFile));
   }
 
   return files;
 }
+
+/**
+ * Excludes list of files creating a named group
+ * @param root
+ * @param group
+ * @param files
+ */
+export const exclude = async (root: string, group: string, files: string[]): Promise<string[]> => {
+  return excludeFiles(root, group, files, 'given set');
+}
+
 
 /**
  * excludes locations by a glob match
@@ -59,5 +63,5 @@ export const exclude = async (root: string, group: string, files: string[]): Pro
 export const excludeByGlob = async (root: string, group: string, pattern: string, ignore?: string) => {
   const files: string[] = (await promisify(glob)(pattern, {ignore})).sort();
 
-  return exclude(root, group, removeNestedDirectories(files));
+  return excludeFiles(root, group, removeNestedDirectories(files), pattern);
 };
