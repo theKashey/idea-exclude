@@ -7,17 +7,10 @@ import {findConfigurationFile, getProjectNameFromPath} from "./configuration";
 import {readFile, writeFile} from "./fs";
 import {injectExcludes, prepareIml} from "./iml-utills";
 import {removeNestedDirectories} from "./utils";
+import {log, debug as enableDebug, error} from "./logging";
 
 export {findProjectRoot} from './configuration';
-
-import {diary, enable} from 'diary';
-
-const {log} = diary('idea-exclude');
-
-/**
- * Puts idea-exclude into debug mode, and thus logging to stdout. This mentod isnt reversable. 
- */
-export const debug = () => enable('idea-exclude:*');
+export {enableDebug}
 
 /**
  * Excludes list of files creating a named group
@@ -25,11 +18,12 @@ export const debug = () => enable('idea-exclude:*');
  * @param group
  * @param files
  */
-export const exclude = async (root: string, group: string, files: string[]) => {
+export const exclude = async (root: string, group: string, files: string[]): Promise<string[]> => {
   const baseName = getProjectNameFromPath(root);
   const ideaFile = findConfigurationFile(root, baseName);
   if (!ideaFile) {
-    throw new Error(`💥 no .idea configuration file found at ${root} ~ ${baseName}`);
+    error(`💥 no .idea configuration file found at ${root} ~ ${baseName}`);
+    return [];
   }
 
   log('excluding %s with %f files', relative(baseName, ideaFile), files.length);

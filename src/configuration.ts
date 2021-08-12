@@ -1,5 +1,6 @@
 import fs from "fs";
 import {normalize, basename, dirname} from "path";
+import {log} from "./logging";
 
 export const getProjectNameFromPath = (root: string): string => basename(root);
 
@@ -7,7 +8,7 @@ export const findConfigurationFile = (root: string, projectName: string): string
   const IDEA_FOLDER = normalize(`${root}/.idea`);
   const IML_FILE_PATH = normalize(`${IDEA_FOLDER}/${projectName}.iml`);
   const MODULE_IML_PATH = normalize(`${root}/${projectName}.iml`);
-  
+
   if (fs.existsSync(MODULE_IML_PATH)) {
     return MODULE_IML_PATH;
   }
@@ -24,7 +25,7 @@ export const findConfigurationFile = (root: string, projectName: string): string
 export const findProjectRoot = (startPath: string) => {
   let currentPath = startPath;
   while (currentPath) {
-    console.log('👀 looking at', currentPath);
+    log('👀 looking at', currentPath);
     const file = findConfigurationFile(currentPath, getProjectNameFromPath(currentPath));
     if (file) {
       return currentPath;

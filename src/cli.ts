@@ -2,12 +2,12 @@
 
 import sade from "sade";
 
-import { exclude, excludeByGlob, findProjectRoot } from "./index";
+import {exclude, excludeByGlob, findProjectRoot} from "./index";
 
 const program = sade("idea-exclude <group> [...globs]", true);
 
 program
-    .version(require("../package.json").version);
+  .version(require("../package.json").version);
 
 program
   .option("--lookabove", "allows looking up the current folder in search of idea root")
@@ -15,7 +15,7 @@ program
   .option("-r, --root <path>", "root folder, defaults to process.cwd", process.cwd())
   .example('node_modules "packages/**/node_modules"')
   .example('node_modules "!(build|node_modules)/**/node_modules"')
-  .action(async (group, glob, { lookabove, root, ignore, _: globs }) => {
+  .action(async (group, glob, {lookabove, root, ignore, _: globs}) => {
     globs = [].concat(glob || [], globs);
 
     if (glob.length === 0) throw Error("nothing matched");
@@ -27,7 +27,6 @@ program
         root: root,
         lookabove: lookabove,
       });
-      process.exit(1);
       return;
     }
 
@@ -35,7 +34,8 @@ program
       const filesMatched = await (globs.length === 1
         ? excludeByGlob(root, group, globs[0], ignore)
         : exclude(root, group, globs));
-      console.log(filesMatched.length, "entities added");
+
+      console.log(`👻 '${globs}' matched ${filesMatched.length} items. Exclusions added to ${root}`);
       return;
     } catch (e) {
       console.error(e.message);
