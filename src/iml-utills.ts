@@ -56,12 +56,33 @@ export const injectToGroup = (imlContents: string, group: string, content: strin
   ].join("\n");
 };
 
+export const injecter = (content: string, group: string, excludes: string[], mapper:(match:string) => string): string =>
+    injectToGroup(
+        content,
+        group,
+        excludes.map(mapper).join("\n")
+    );
+
 export const injectExcludes = (content: string, group: string, excludes: string[]): string =>
-  injectToGroup(
+    injecter(
     content,
     group,
-    excludes
-      //
-      .map((exclude) => `<excludeFolder url="${FILE_MODULE_PREFIX}/${exclude}" />`)
-      .join("\n")
+    excludes,
+    (exclude) => `<excludeFolder url="${FILE_MODULE_PREFIX}/${exclude}" />`
   );
+
+export const injectTestRoots = (content: string, group: string, excludes: string[]): string =>
+    injecter(
+        content,
+        group,
+        excludes,
+        (exclude) => `<sourceFolder url="${FILE_MODULE_PREFIX}/${exclude}" isTestSource="true" />`
+    );
+
+export const injectSourceRoots = (content: string, group: string, excludes: string[]): string =>
+    injecter(
+        content,
+        group,
+        excludes,
+        (exclude) => `<sourceFolder url="${FILE_MODULE_PREFIX}/${exclude}" isTestSource="false" />`
+    );

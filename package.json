@@ -14,7 +14,7 @@
     "set-permissions": "chmod +x ./dist/cli.js",
     "prepublish": "yarn build",
     "cli:run": "node dist/cli.js",
-    "postbuild": "node dist/cli idea-exclude dist --lookabove"
+    "postbuild": "node dist/cli idea-exclude dist --lookabove && node dist/cli idea-exclude __tests__ --test-root --lookabove"
   },
   "dependencies": {
     "diary": "^0.1.6",

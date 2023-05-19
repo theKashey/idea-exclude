@@ -19,13 +19,20 @@ idea-exclude node_modules "!(build|node_modules)/**/node_modules"
 # can accept a list of files to exclude
 idea-exclude custom-files this and this
 
+# set __tests__ as test roots
+idea-exclude tests --test-root "**/__tests__"
+# set src as source roots
+idea-exclude tests --source-root "!(build|node_modules)/**/src"
 ```
 
-This project removes own dist folder, having .idea configuration a few levels above
+This project _excludes_ own dist folder, having .idea configuration a few levels above. To enable discoverability of configuration "above" - set the corresponding flag
 ```sh
 idea-exclude build dist --lookabove
 ```
 
+IDEA platform documentation related to controlled features can be found at
+- https://www.jetbrains.com/help/idea/testing.html#add-test-root
+- https://www.jetbrains.com/help/webstorm/configuring-project-structure.html
 
 # API
 Exclusion API requires 3 arguments:
@@ -51,7 +58,7 @@ exclude(process.cwd(), "monorepo", workspaces.map(({ dir }) => `${dir}/node_modu
 excludeByGlob(process.cwd(), "monorepo", `{${workspaces.map(({ dir }) => dir).join(",")}}/node_modules`);
 ```
 
-# Controling verbosity level
+# Controlling verbosity level
 `idea-exclude` uses [diary](https://github.com/maraisr/diary) [for logging](https://github.com/theKashey/idea-exclude/pull/1) and in order to increase verbosity on the output one has to provide ENV variable
 ```bash
 DEBUG="idea-exclude:*" idea-exclude node_modules "packages/**/node_modules"
@@ -65,7 +72,6 @@ enabledIdeaExcludeDebug();
 
 # Prior art
 The original version created by [Aleksandr "Sasha" Motsjonov](https://twitter.com/soswow).
-
 
 # Licence
 MIT
