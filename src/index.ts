@@ -1,7 +1,7 @@
 import {relative} from "path";
 import {promisify} from "util";
-
 import {glob} from "glob";
+import lockFile from "proper-lockfile";
 
 import {findConfigurationFile, getProjectNameFromPath} from "./configuration";
 import {readFile, writeFile} from "./fs";
@@ -13,39 +13,48 @@ export {findProjectRoot} from './configuration';
 export {enableDebug}
 
 const OPERATIONS = {
-  'exclude':injectExcludes,
-  'test-roots':injectTestRoots,
-  'source-roots':injectSourceRoots,
+    'exclude': injectExcludes,
+    'test-roots': injectTestRoots,
+    'source-roots': injectSourceRoots,
 } as const;
 
 export type Operation = keyof typeof OPERATIONS;
 
 const excludeFiles = async (root: string, group: string, files: string[], mask: string, operation: Operation): Promise<string[]> => {
-  const baseName = getProjectNameFromPath(root);
-  const ideaFile = findConfigurationFile(root, baseName);
-  if (!ideaFile) {
-    error(`💥 no .idea configuration file found at ${root} ~ ${baseName}`);
-    return [];
-  }
+    const baseName = getProjectNameFromPath(root);
+    const ideaFile = findConfigurationFile(root, baseName);
+    if (!ideaFile) {
+        error(`💥 no .idea configuration file found at ${root} ~ ${baseName}`);
+        return [];
+    }
 
-  log('excluding %s with %f files', relative(baseName, ideaFile), files.length, 'matching', mask);
+    log('excluding %s with %f files', relative(baseName, ideaFile), files.length, 'matching', mask);
 
-  const originalConfiguration: string =
-    prepareIml(
-      (await readFile(ideaFile)).toString("utf-8")
-    );
+    try {
+        const release = await lockFile.lock('./idea-exclude.lock', {retries:100, realpath:false});
+        try {
+            const originalConfiguration: string =
+                prepareIml(
+                    (await readFile(ideaFile)).toString("utf-8")
+                );
 
-  const finalConfiguration = OPERATIONS[operation](
-    originalConfiguration,
-    group,
-    files.map((file) => relative(root, file))
-  );
+            const finalConfiguration = OPERATIONS[operation](
+                originalConfiguration,
+                group,
+                files.map((file) => relative(root, file))
+            );
 
-  if (finalConfiguration !== originalConfiguration) {
-    await writeFile(ideaFile, finalConfiguration);
-  }
+            if (finalConfiguration !== originalConfiguration) {
+                await writeFile(ideaFile, finalConfiguration);
+            }
+        } finally {
+            release();
+        }
+    } catch(e){
+        console.error(e);
+    }
 
-  return files;
+    return files;
 }
 
 /**
@@ -55,7 +64,7 @@ const excludeFiles = async (root: string, group: string, files: string[], mask: 
  * @param files
  */
 export const exclude = async (root: string, group: string, files: string[]): Promise<string[]> => {
-  return excludeFiles(root, group, files, 'given set', 'exclude');
+    return excludeFiles(root, group, files, 'given set', 'exclude');
 }
 
 
@@ -68,10 +77,9 @@ export const exclude = async (root: string, group: string, files: string[]): Pro
  *
  * just executes the glob and calls {@link exclude} under the hood
  */
-export const excludeByGlob = async (root: string, group: string, pattern: string, ignore?: string) => {
-  const files: string[] = (await promisify(glob)(pattern, {ignore})).sort();
-
-  return excludeFiles(root, group, removeNestedDirectories(files), pattern, 'exclude');
+export const excludeByGlob = async (root: string, group: string, pattern: string, ignore: string = 'node_modules') => {
+    const files: string[] = (await promisify(glob)(pattern, {ignore})).sort();
+    return excludeFiles(root, group, removeNestedDirectories(files), pattern, 'exclude');
 };
 
 /**
@@ -81,7 +89,7 @@ export const excludeByGlob = async (root: string, group: string, pattern: string
  * @param files
  */
 export const setTestRoots = async (root: string, group: string, files: string[]): Promise<string[]> => {
-  return excludeFiles(root, group, files, 'given set', 'test-roots');
+    return excludeFiles(root, group, files, 'given set', 'test-roots');
 }
 
 
@@ -94,10 +102,10 @@ export const setTestRoots = async (root: string, group: string, files: string[])
  *
  * just executes the glob and calls {@link exclude} under the hood
  */
-export const setTestRootsByGlob = async (root: string, group: string, pattern: string, ignore?: string) => {
-  const files: string[] = (await promisify(glob)(pattern, {ignore})).sort();
+export const setTestRootsByGlob = async (root: string, group: string, pattern: string, ignore: string = 'node_modules') => {
+    const files: string[] = (await promisify(glob)(pattern, {ignore})).sort();
 
-  return excludeFiles(root, group, removeNestedDirectories(files), pattern, 'test-roots');
+    return excludeFiles(root, group, removeNestedDirectories(files), pattern, 'test-roots');
 };
 
 /**
@@ -107,7 +115,7 @@ export const setTestRootsByGlob = async (root: string, group: string, pattern: s
  * @param files
  */
 export const setSourceRoots = async (root: string, group: string, files: string[]): Promise<string[]> => {
-  return excludeFiles(root, group, files, 'given set', 'source-roots');
+    return excludeFiles(root, group, files, 'given set', 'source-roots');
 }
 
 
@@ -120,8 +128,8 @@ export const setSourceRoots = async (root: string, group: string, files: string[
  *
  * just executes the glob and calls {@link exclude} under the hood
  */
-export const setSourceRootsByGlob = async (root: string, group: string, pattern: string, ignore?: string) => {
-  const files: string[] = (await promisify(glob)(pattern, {ignore})).sort();
+export const setSourceRootsByGlob = async (root: string, group: string, pattern: string, ignore: string = 'node_modules') => {
+    const files: string[] = (await promisify(glob)(pattern, {ignore})).sort();
 
-  return excludeFiles(root, group, removeNestedDirectories(files), pattern, 'source-roots');
+    return excludeFiles(root, group, removeNestedDirectories(files), pattern, 'source-roots');
 };

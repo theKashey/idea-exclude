@@ -52,6 +52,12 @@ program
         'source-root': sourceRoot,
         _: globs
     }) => {
+        if(testRoot && typeof testRoot !== 'boolean'){
+            throw Error("--test-root should be the last argument");
+        }
+        if(sourceRoot&&  typeof sourceRoot !== 'boolean'){
+            throw Error("--source-root should be the last argument");
+        }
         globs = [].concat(glob || [], globs);
 
         if (glob.length === 0) throw Error("nothing matched");
